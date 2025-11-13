@@ -1,0 +1,11 @@
+{
+    "name": "Mis Finanzas",
+    "short_name": "Finanzas",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#667eea",
+    "theme_color": "#667eea",
+    "description": "Aplicación de gestión de finanzas personales",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false
+}
