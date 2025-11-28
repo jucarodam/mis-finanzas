@@ -23,45 +23,76 @@ class TransactionListItem extends StatelessWidget {
     final categoryProvider = Provider.of<CategoryProvider>(context);
     final category = categoryProvider.getCategoryById(transaction.categoryId);
 
-    return Card(
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.1),
+        ),
+      ),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.paddingMedium,
+          vertical: 8,
+        ),
         onTap: onTap,
         leading: Container(
-          width: 50,
-          height: 50,
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
             color: category != null
-                ? Color(category.colorValue).withOpacity(0.1)
+                ? Color(category.colorValue).withOpacity(0.15)
                 : Colors.grey.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
+            shape: BoxShape.circle,
           ),
           child: Center(
             child: Text(
               category?.icon ?? '💰',
-              style: const TextStyle(fontSize: 24),
+              style: const TextStyle(fontSize: 28),
             ),
           ),
         ),
         title: Text(
           transaction.title,
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              category?.name ?? 'Sin categoría',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-            Text(
-              DateFormat('dd MMM yyyy').format(transaction.date),
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey[500],
-              ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                if (category != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Color(category.colorValue).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      category.name,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Color(category.colorValue),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  DateFormat('dd MMM yyyy').format(transaction.date),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -85,28 +116,45 @@ class TransactionListItem extends StatelessWidget {
                 if (transaction.isRecurring)
                   Container(
                     margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppConstants.accentColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(4),
+                      color: AppConstants.accentColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      'Fijo',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: AppConstants.accentColor,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.repeat,
+                          size: 10,
+                          color: AppConstants.accentColor,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          'Fijo',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppConstants.accentColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
               ],
             ),
             if (onDelete != null) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               IconButton(
-                icon: const Icon(Icons.delete_outline, size: 20),
-                color: Colors.grey[600],
+                icon: Icon(
+                  Icons.delete_outline,
+                  size: 22,
+                  color: Colors.grey[400],
+                ),
                 onPressed: onDelete,
+                style: IconButton.styleFrom(
+                  hoverColor: AppConstants.errorColor.withOpacity(0.1),
+                ),
               ),
             ],
           ],
