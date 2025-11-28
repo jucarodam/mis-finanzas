@@ -43,17 +43,23 @@ class SummaryCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: Colors.grey[600],
                         ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: AppConstants.paddingMedium),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
+            const Spacer(),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+              ),
             ),
             if (subtitle != null) ...[
               const SizedBox(height: AppConstants.paddingSmall),
@@ -62,6 +68,8 @@ class SummaryCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Colors.grey[500],
                     ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ],
           ],

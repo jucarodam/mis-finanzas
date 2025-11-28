@@ -220,14 +220,17 @@ class _MonthlyEvolutionChart extends StatelessWidget {
           .reduce((a, b) => a > b ? a : b),
     );
 
+    // Asegurar que maxY no sea 0 para evitar errores en el gráfico
+    final safeMaxY = maxY > 0 ? maxY : 1000.0;
+
     return LineChart(
       LineChartData(
-        maxY: maxY * 1.2,
+        maxY: safeMaxY * 1.2,
         minY: 0,
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
-          horizontalInterval: maxY / 5,
+          horizontalInterval: safeMaxY / 5,
         ),
         titlesData: FlTitlesData(
           leftTitles: AxisTitles(

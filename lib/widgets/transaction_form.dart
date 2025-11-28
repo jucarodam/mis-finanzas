@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../models/transaction_model.dart';
 import '../providers/category_provider.dart';
 import '../providers/transaction_provider.dart';
+import 'package:flutter/services.dart';
+import '../utils/currency_formatter.dart';
+import '../utils/currency_input_formatter.dart';
 import '../utils/constants.dart';
 
 class TransactionForm extends StatefulWidget {
@@ -33,7 +36,9 @@ class _TransactionFormState extends State<TransactionForm> {
     super.initState();
     _titleController = TextEditingController(text: widget.transaction?.title ?? '');
     _amountController = TextEditingController(
-      text: widget.transaction?.amount.toString() ?? '',
+      text: widget.transaction != null
+          ? CurrencyFormatter.format(widget.transaction!.amount)
+          : '',
     );
     _descriptionController = TextEditingController(
       text: widget.transaction?.description ?? '',
@@ -70,7 +75,7 @@ class _TransactionFormState extends State<TransactionForm> {
       if (widget.transaction == null) {
         provider.addTransaction(
           title: _titleController.text,
-          amount: double.parse(_amountController.text),
+          amount: CurrencyFormatter.parse(_amountController.text),
           type: widget.type,
           categoryId: _selectedCategoryId!,
           date: _selectedDate,
@@ -82,7 +87,7 @@ class _TransactionFormState extends State<TransactionForm> {
       } else {
         final updated = widget.transaction!.copyWith(
           title: _titleController.text,
-          amount: double.parse(_amountController.text),
+          amount: CurrencyFormatter.parse(_amountController.text),
           categoryId: _selectedCategoryId!,
           date: _selectedDate,
           description: _descriptionController.text.isEmpty
@@ -144,10 +149,14 @@ class _TransactionFormState extends State<TransactionForm> {
                     prefixText: '\$ ',
                   ),
                   keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    CurrencyInputFormatter(),
+                  ],
                   validator: (value) {
                     if (value?.isEmpty ?? true) return 'Ingresa un monto';
-                    if (double.tryParse(value!) == null) {
-                      return 'Ingresa un número válido';
+                    if (CurrencyFormatter.parse(value!) <= 0) {
+                      return 'Ingresa un monto válido';
                     }
                     return null;
                   },

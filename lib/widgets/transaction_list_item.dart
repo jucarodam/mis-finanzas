@@ -57,7 +57,7 @@ class TransactionListItem extends StatelessWidget {
               ),
             ),
             Text(
-              DateFormat('dd MMM yyyy', 'es_ES').format(transaction.date),
+              DateFormat('dd MMM yyyy').format(transaction.date),
               style: TextStyle(
                 fontSize: 11,
                 color: Colors.grey[500],

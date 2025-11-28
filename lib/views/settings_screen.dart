@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/theme_provider.dart';
+import 'package:flutter/services.dart';
+import '../utils/currency_formatter.dart';
+import '../utils/currency_input_formatter.dart';
 import '../utils/constants.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -126,7 +129,9 @@ class SettingsScreen extends StatelessWidget {
 
   void _showMonthlyLimitDialog(BuildContext context, SettingsProvider provider) {
     final controller = TextEditingController(
-      text: provider.monthlyLimit > 0 ? provider.monthlyLimit.toStringAsFixed(0) : '',
+      text: provider.monthlyLimit > 0
+          ? CurrencyFormatter.format(provider.monthlyLimit)
+          : '',
     );
 
     showDialog(
@@ -136,10 +141,14 @@ class SettingsScreen extends StatelessWidget {
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            CurrencyInputFormatter(),
+          ],
           decoration: const InputDecoration(
             labelText: 'Monto',
             prefixText: '\$ ',
-            hintText: 'Ej: 5000000',
+            hintText: 'Ej: 5.000.000',
           ),
         ),
         actions: [
@@ -149,7 +158,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              final value = double.tryParse(controller.text) ?? 0;
+              final value = CurrencyFormatter.parse(controller.text);
               provider.updateMonthlyLimit(value);
               Navigator.pop(context);
             },

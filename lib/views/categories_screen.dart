@@ -84,7 +84,7 @@ class _CategoryList extends StatelessWidget {
         maxCrossAxisExtent: 200,
         mainAxisSpacing: AppConstants.paddingMedium,
         crossAxisSpacing: AppConstants.paddingMedium,
-        childAspectRatio: 1.2,
+        childAspectRatio: 1.0,
       ),
       itemCount: categories.length,
       itemBuilder: (context, index) {
@@ -131,16 +131,21 @@ class _CategoryCard extends StatelessWidget {
                 style: const TextStyle(fontSize: 48),
               ),
               const SizedBox(height: 8),
-              Text(
-                category.name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    category.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
