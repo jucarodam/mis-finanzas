@@ -1,6 +1,6 @@
 name: mis_finanzas
-description: Aplicación completa de gestión de finanzas personales en Flutter Web
-version: 1.0.0+1
+description: Aplicación avanzada de gestión de finanzas personales
+version: 2.0.0+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -25,6 +25,11 @@ dependencies:
 
   # UI
   flutter_colorpicker: ^1.0.3
+  google_fonts: ^6.1.0
+  flutter_animate: ^4.5.0
+
+  # Red (tasas de cambio)
+  http: ^1.1.0
 
 dev_dependencies:
   flutter_test:

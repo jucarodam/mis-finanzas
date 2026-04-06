@@ -34,7 +34,14 @@ class TransactionModel extends HiveObject {
   String? description;
 
   @HiveField(7)
-  bool isRecurring; // Para gastos fijos mensuales
+  bool isRecurring;
+
+  // Campos nuevos (compatibles con datos existentes — null para registros viejos)
+  @HiveField(8)
+  String? accountId;
+
+  @HiveField(9)
+  String? notes;
 
   TransactionModel({
     required this.id,
@@ -45,6 +52,8 @@ class TransactionModel extends HiveObject {
     required this.date,
     this.description,
     this.isRecurring = false,
+    this.accountId,
+    this.notes,
   });
 
   TransactionModel copyWith({
@@ -56,42 +65,50 @@ class TransactionModel extends HiveObject {
     DateTime? date,
     String? description,
     bool? isRecurring,
+    String? accountId,
+    String? notes,
   }) {
     return TransactionModel(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      amount: amount ?? this.amount,
-      type: type ?? this.type,
-      categoryId: categoryId ?? this.categoryId,
-      date: date ?? this.date,
+      id:          id          ?? this.id,
+      title:       title       ?? this.title,
+      amount:      amount      ?? this.amount,
+      type:        type        ?? this.type,
+      categoryId:  categoryId  ?? this.categoryId,
+      date:        date        ?? this.date,
       description: description ?? this.description,
       isRecurring: isRecurring ?? this.isRecurring,
+      accountId:   accountId   ?? this.accountId,
+      notes:       notes       ?? this.notes,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'amount': amount,
-      'type': type.name,
-      'categoryId': categoryId,
-      'date': date.toIso8601String(),
-      'description': description,
-      'isRecurring': isRecurring,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'id':          id,
+    'title':       title,
+    'amount':      amount,
+    'type':        type.name,
+    'categoryId':  categoryId,
+    'date':        date.toIso8601String(),
+    'description': description,
+    'isRecurring': isRecurring,
+    'accountId':   accountId,
+    'notes':       notes,
+  };
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
     return TransactionModel(
-      id: json['id'],
-      title: json['title'],
-      amount: json['amount'],
-      type: json['type'] == 'income' ? TransactionType.income : TransactionType.expense,
-      categoryId: json['categoryId'],
-      date: DateTime.parse(json['date']),
-      description: json['description'],
-      isRecurring: json['isRecurring'] ?? false,
+      id:          json['id'] as String,
+      title:       json['title'] as String,
+      amount:      (json['amount'] as num).toDouble(),
+      type:        json['type'] == 'income'
+          ? TransactionType.income
+          : TransactionType.expense,
+      categoryId:  json['categoryId'] as String,
+      date:        DateTime.parse(json['date'] as String),
+      description: json['description'] as String?,
+      isRecurring: json['isRecurring'] as bool? ?? false,
+      accountId:   json['accountId'] as String?,
+      notes:       json['notes'] as String?,
     );
   }
 }

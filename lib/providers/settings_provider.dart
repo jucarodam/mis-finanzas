@@ -6,10 +6,9 @@ class SettingsProvider extends ChangeNotifier {
   BudgetModel? _budget;
 
   BudgetModel? get budget => _budget;
-
-  double get monthlyLimit => _budget?.monthlyLimit ?? 0;
-  double get warningPercentage => _budget?.warningPercentage ?? 80.0;
-  String get currency => _budget?.currency ?? 'COP';
+  double get monthlyLimit       => _budget?.monthlyLimit ?? 0;
+  double get warningPercentage  => _budget?.warningPercentage ?? 80.0;
+  String get currency           => _budget?.currency ?? 'COP';
 
   SettingsProvider() {
     loadSettings();
@@ -24,40 +23,33 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   Future<void> updateMonthlyLimit(double limit) async {
-    if (_budget != null) {
-      _budget!.monthlyLimit = limit;
-      await _budget!.save();
-      notifyListeners();
-    }
+    if (_budget == null) return;
+    _budget!.monthlyLimit = limit;
+    await _budget!.save();
+    notifyListeners();
   }
 
-  Future<void> updateWarningPercentage(double percentage) async {
-    if (_budget != null) {
-      _budget!.warningPercentage = percentage;
-      await _budget!.save();
-      notifyListeners();
-    }
+  Future<void> updateWarningPercentage(double pct) async {
+    if (_budget == null) return;
+    _budget!.warningPercentage = pct;
+    await _budget!.save();
+    notifyListeners();
   }
 
-  Future<void> updateCurrency(String newCurrency) async {
-    if (_budget != null) {
-      _budget!.currency = newCurrency;
-      await _budget!.save();
-      notifyListeners();
-    }
+  Future<void> updateCurrency(String c) async {
+    if (_budget == null) return;
+    _budget!.currency = c;
+    await _budget!.save();
+    notifyListeners();
   }
 
-  // Verificar si se debe mostrar advertencia
   bool shouldShowWarning(double currentExpense) {
     if (_budget == null || _budget!.monthlyLimit <= 0) return false;
-
-    final percentage = (currentExpense / _budget!.monthlyLimit) * 100;
-    return percentage >= _budget!.warningPercentage;
+    return (currentExpense / _budget!.monthlyLimit * 100) >= _budget!.warningPercentage;
   }
 
-  // Obtener porcentaje de gasto actual
   double getExpensePercentage(double currentExpense) {
     if (_budget == null || _budget!.monthlyLimit <= 0) return 0;
-    return (currentExpense / _budget!.monthlyLimit) * 100;
+    return (currentExpense / _budget!.monthlyLimit * 100).clamp(0.0, 100.0);
   }
 }

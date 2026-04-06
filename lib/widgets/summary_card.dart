@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../utils/constants.dart';
 
 class SummaryCard extends StatelessWidget {
@@ -7,6 +9,7 @@ class SummaryCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String? subtitle;
+  final VoidCallback? onTap;
 
   const SummaryCard({
     Key? key,
@@ -15,108 +18,99 @@ class SummaryCard extends StatelessWidget {
     required this.icon,
     required this.color,
     this.subtitle,
+    this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shadowColor: color.withOpacity(0.4),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-      ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: onTap,
       child: Container(
+        padding: const EdgeInsets.all(AppConstants.paddingMedium),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              color,
-              color.withOpacity(0.8),
-            ],
+          color: isDark ? AppConstants.darkCard : Colors.white,
+          borderRadius: BorderRadius.circular(AppConstants.radiusXL),
+          border: Border.all(
+            color: isDark
+                ? AppConstants.darkBorder
+                : Colors.black.withOpacity(0.06),
           ),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: color.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
-        child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Icono decorativo de fondo
-            Positioned(
-              right: -20,
-              top: -20,
-              child: Icon(
-                icon,
-                size: 100,
-                color: Colors.white.withOpacity(0.1),
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.15),
+                    borderRadius:
+                        BorderRadius.circular(AppConstants.radiusMedium),
+                  ),
+                  child: Icon(icon, color: color, size: 18),
+                ),
+                const Spacer(),
+                if (subtitle != null)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.12),
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusMedium),
+                    ),
+                    child: Text(
+                      subtitle!,
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: color,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppConstants.paddingMedium),
+            Text(
+              title,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(AppConstants.paddingLarge),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
-                        ),
-                        child: Icon(icon, color: Colors.white, size: 20),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                color: Colors.white.withOpacity(0.9),
-                                fontWeight: FontWeight.w500,
-                              ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      value,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: -1,
-                          ),
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        subtitle!,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.white.withOpacity(0.9),
-                              fontWeight: FontWeight.w500,
-                            ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
-                  ],
-                ],
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color:
+                    isDark ? Colors.white : const Color(0xFF0F172A),
+                letterSpacing: -0.5,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
       ),
-    );
+    ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.08, end: 0);
   }
 }

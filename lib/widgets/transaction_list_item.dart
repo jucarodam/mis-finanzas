@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/transaction_model.dart';
 import '../providers/category_provider.dart';
+import '../providers/settings_provider.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/constants.dart';
 
@@ -21,142 +23,210 @@ class TransactionListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final categoryProvider = Provider.of<CategoryProvider>(context);
+    final settingsProvider = Provider.of<SettingsProvider>(context);
     final category = categoryProvider.getCategoryById(transaction.categoryId);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isIncome = transaction.type == TransactionType.income;
+    final catColor = category != null
+        ? Color(category.colorValue)
+        : (isIncome ? AppConstants.incomeColor : AppConstants.expenseColor);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-        border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.1),
+    return Dismissible(
+      key: Key(transaction.id),
+      direction: onDelete != null
+          ? DismissDirection.endToStart
+          : DismissDirection.none,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: AppConstants.expenseColor.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
         ),
+        child: const Icon(Icons.delete_outline, color: AppConstants.expenseColor),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppConstants.paddingMedium,
-          vertical: 8,
-        ),
+      onDismissed: (_) => onDelete?.call(),
+      child: GestureDetector(
         onTap: onTap,
-        leading: Container(
-          width: 56,
-          height: 56,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.paddingMedium,
+            vertical: 12,
+          ),
+          margin: const EdgeInsets.only(bottom: 6),
           decoration: BoxDecoration(
-            color: category != null
-                ? Color(category.colorValue).withOpacity(0.15)
-                : Colors.grey.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              category?.icon ?? '💰',
-              style: const TextStyle(fontSize: 28),
+            color: isDark ? AppConstants.darkCard : Colors.white,
+            borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+            border: Border.all(
+              color: isDark
+                  ? AppConstants.darkBorder
+                  : Colors.black.withOpacity(0.05),
             ),
           ),
-        ),
-        title: Text(
-          transaction.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                if (category != null) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Color(category.colorValue).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      category.name,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Color(category.colorValue),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                Text(
-                  DateFormat('dd MMM yyyy').format(transaction.date),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+          child: Row(
+            children: [
+              // ── Ícono categoría ──────────────────────────────────────────
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: catColor.withOpacity(0.15),
+                  borderRadius:
+                      BorderRadius.circular(AppConstants.radiusMedium),
                 ),
-              ],
-            ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  CurrencyFormatter.format(transaction.amount),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: transaction.type == TransactionType.income
-                        ? AppConstants.successColor
-                        : AppConstants.errorColor,
+                child: Center(
+                  child: Text(
+                    category?.icon ?? (isIncome ? '💰' : '💸'),
+                    style: const TextStyle(fontSize: 22),
                   ),
-                ),
-                if (transaction.isRecurring)
-                  Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppConstants.accentColor.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.repeat,
-                          size: 10,
-                          color: AppConstants.accentColor,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          'Fijo',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: AppConstants.accentColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-            if (onDelete != null) ...[
-              const SizedBox(width: 12),
-              IconButton(
-                icon: Icon(
-                  Icons.delete_outline,
-                  size: 22,
-                  color: Colors.grey[400],
-                ),
-                onPressed: onDelete,
-                style: IconButton.styleFrom(
-                  hoverColor: AppConstants.errorColor.withOpacity(0.1),
                 ),
               ),
+              const SizedBox(width: 12),
+
+              // ── Info ──────────────────────────────────────────────────────
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      transaction.title,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? Colors.white
+                            : const Color(0xFF0F172A),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        if (category != null) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: catColor.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              category.name,
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: catColor,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        Text(
+                          DateFormat('dd MMM').format(transaction.date),
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: isDark
+                                ? const Color(0xFF64748B)
+                                : const Color(0xFF94A3B8),
+                          ),
+                        ),
+                        if (transaction.isRecurring) ...[
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.repeat_rounded,
+                            size: 12,
+                            color: AppConstants.accentColor,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Monto ─────────────────────────────────────────────────────
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${isIncome ? '+' : '-'}${CurrencyFormatter.formatShort(transaction.amount, currency: settingsProvider.currency)}',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: isIncome
+                          ? AppConstants.incomeColor
+                          : AppConstants.expenseColor,
+                    ),
+                  ),
+                ],
+              ),
+
+              // ── Botón eliminar (opcional) ─────────────────────────────────
+              if (onDelete != null) ...[
+                const SizedBox(width: 4),
+                IconButton(
+                  icon: const Icon(Icons.more_vert_rounded, size: 18),
+                  onPressed: () => _showOptions(context),
+                  style: IconButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(32, 32),
+                  ),
+                ),
+              ],
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppConstants.radiusXL),
+        ),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            if (onTap != null)
+              ListTile(
+                leading: const Icon(Icons.edit_outlined),
+                title: const Text('Editar'),
+                onTap: () {
+                  Navigator.pop(context);
+                  onTap?.call();
+                },
+              ),
+            if (onDelete != null)
+              ListTile(
+                leading: const Icon(
+                  Icons.delete_outline,
+                  color: AppConstants.expenseColor,
+                ),
+                title: const Text(
+                  'Eliminar',
+                  style: TextStyle(color: AppConstants.expenseColor),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  onDelete?.call();
+                },
+              ),
+            const SizedBox(height: 8),
           ],
         ),
       ),

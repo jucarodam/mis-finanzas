@@ -56,21 +56,23 @@ class TransactionModelAdapter extends TypeAdapter<TransactionModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return TransactionModel(
-      id: fields[0] as String,
-      title: fields[1] as String,
-      amount: fields[2] as double,
-      type: fields[3] as TransactionType,
-      categoryId: fields[4] as String,
-      date: fields[5] as DateTime,
+      id:          fields[0] as String,
+      title:       fields[1] as String,
+      amount:      fields[2] as double,
+      type:        fields[3] as TransactionType,
+      categoryId:  fields[4] as String,
+      date:        fields[5] as DateTime,
       description: fields[6] as String?,
-      isRecurring: fields[7] as bool,
+      isRecurring: fields[7] as bool? ?? false,
+      accountId:   fields[8] as String?,
+      notes:       fields[9] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, TransactionModel obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -86,7 +88,11 @@ class TransactionModelAdapter extends TypeAdapter<TransactionModel> {
       ..writeByte(6)
       ..write(obj.description)
       ..writeByte(7)
-      ..write(obj.isRecurring);
+      ..write(obj.isRecurring)
+      ..writeByte(8)
+      ..write(obj.accountId)
+      ..writeByte(9)
+      ..write(obj.notes);
   }
 
   @override

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../models/category_model.dart';
 import '../providers/category_provider.dart';
 import '../utils/constants.dart';
@@ -10,68 +12,67 @@ class CategoriesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categoryProvider = Provider.of<CategoryProvider>(context);
+    final provider = Provider.of<CategoryProvider>(context);
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Categorías'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Gastos', icon: Icon(Icons.shopping_cart)),
-              Tab(text: 'Ingresos', icon: Icon(Icons.attach_money)),
+          title: Text('Categorías',
+              style: GoogleFonts.inter(
+                  fontSize: 20, fontWeight: FontWeight.w700)),
+          bottom: TabBar(
+            tabs: const [
+              Tab(text: 'Gastos',   icon: Icon(Icons.arrow_upward_rounded)),
+              Tab(text: 'Ingresos', icon: Icon(Icons.arrow_downward_rounded)),
             ],
+            labelStyle: GoogleFonts.inter(
+                fontSize: 13, fontWeight: FontWeight.w600),
+            indicatorColor: AppConstants.primaryColor,
+            labelColor: AppConstants.primaryColor,
           ),
         ),
         body: TabBarView(
           children: [
-            _CategoryList(
-              categories: categoryProvider.expenseCategories,
-              isExpense: true,
-            ),
-            _CategoryList(
-              categories: categoryProvider.incomeCategories,
-              isExpense: false,
-            ),
+            _CatGrid(cats: provider.expenseCategories, isExpense: true),
+            _CatGrid(cats: provider.incomeCategories,  isExpense: false),
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => const _CategoryForm(),
-            );
-          },
-          icon: const Icon(Icons.add),
-          label: const Text('Nueva Categoría'),
+          onPressed: () => showDialog(
+            context: context,
+            builder: (_) => const _CategoryForm(),
+          ),
+          icon: const Icon(Icons.add_rounded),
+          label: Text('Nueva',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
         ),
       ),
     );
   }
 }
 
-class _CategoryList extends StatelessWidget {
-  final List<CategoryModel> categories;
+// ── Category Grid ─────────────────────────────────────────────────────────────
+class _CatGrid extends StatelessWidget {
+  final List<CategoryModel> cats;
   final bool isExpense;
-
-  const _CategoryList({
-    required this.categories,
-    required this.isExpense,
-  });
+  const _CatGrid({required this.cats, required this.isExpense});
 
   @override
   Widget build(BuildContext context) {
-    if (categories.isEmpty) {
-      return const Center(
+    if (cats.isEmpty) {
+      return Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.category_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
+            const Text('🗂️', style: TextStyle(fontSize: 48)),
+            const SizedBox(height: 12),
             Text(
-              'No hay categorías',
-              style: TextStyle(color: Colors.grey),
+              'Sin categorías',
+              style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF94A3B8)),
             ),
           ],
         ),
@@ -80,84 +81,80 @@ class _CategoryList extends StatelessWidget {
 
     return GridView.builder(
       padding: const EdgeInsets.all(AppConstants.paddingMedium),
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 200,
-        mainAxisSpacing: AppConstants.paddingMedium,
-        crossAxisSpacing: AppConstants.paddingMedium,
-        childAspectRatio: 1.0,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 160,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 0.9,
       ),
-      itemCount: categories.length,
-      itemBuilder: (context, index) {
-        final category = categories[index];
-        return _CategoryCard(category: category);
-      },
+      itemCount: cats.length,
+      itemBuilder: (ctx, i) => _CatCard(cat: cats[i])
+          .animate()
+          .fadeIn(delay: (i * 40).ms)
+          .scale(begin: const Offset(0.92, 0.92)),
     );
   }
 }
 
-class _CategoryCard extends StatelessWidget {
-  final CategoryModel category;
-
-  const _CategoryCard({required this.category});
+// ── Category Card ─────────────────────────────────────────────────────────────
+class _CatCard extends StatelessWidget {
+  final CategoryModel cat;
+  const _CatCard({required this.cat});
 
   @override
   Widget build(BuildContext context) {
-    final color = Color(category.colorValue);
+    final color = Color(cat.colorValue);
 
-    return Card(
-      child: InkWell(
-        onTap: () {
-          showDialog(
-            context: context,
-            builder: (context) => _CategoryForm(category: category),
-          );
-        },
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        child: Container(
-          padding: const EdgeInsets.all(AppConstants.paddingMedium),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [color.withOpacity(0.7), color],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    return GestureDetector(
+      onTap: () => showDialog(
+        context: context,
+        builder: (_) => _CategoryForm(category: cat),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [color.withOpacity(0.8), color],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppConstants.radiusXL),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                category.icon,
-                style: const TextStyle(fontSize: 48),
-              ),
-              const SizedBox(height: 8),
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    category.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(cat.icon, style: const TextStyle(fontSize: 36)),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                cat.name,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
                 ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
+// ── Category Form ─────────────────────────────────────────────────────────────
 class _CategoryForm extends StatefulWidget {
   final CategoryModel? category;
-
   const _CategoryForm({this.category});
 
   @override
@@ -166,17 +163,17 @@ class _CategoryForm extends StatefulWidget {
 
 class _CategoryFormState extends State<_CategoryForm> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _nameController;
-  late String _selectedIcon;
-  late Color _selectedColor;
+  late TextEditingController _nameCtrl;
+  late String _icon;
+  late Color _color;
   late bool _isExpense;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.category?.name ?? '');
-    _selectedIcon = widget.category?.icon ?? AppConstants.categoryIcons[0];
-    _selectedColor = widget.category != null
+    _nameCtrl  = TextEditingController(text: widget.category?.name ?? '');
+    _icon      = widget.category?.icon ?? AppConstants.categoryIcons[0];
+    _color     = widget.category != null
         ? Color(widget.category!.colorValue)
         : AppConstants.primaryColor;
     _isExpense = widget.category?.isExpense ?? true;
@@ -184,205 +181,276 @@ class _CategoryFormState extends State<_CategoryForm> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _nameCtrl.dispose();
     super.dispose();
   }
 
   void _save() {
-    if (_formKey.currentState!.validate()) {
-      final provider = Provider.of<CategoryProvider>(context, listen: false);
-
-      if (widget.category == null) {
-        provider.addCategory(
-          name: _nameController.text,
-          icon: _selectedIcon,
-          colorValue: _selectedColor.value,
-          isExpense: _isExpense,
-        );
-      } else {
-        final updated = widget.category!.copyWith(
-          name: _nameController.text,
-          icon: _selectedIcon,
-          colorValue: _selectedColor.value,
-          isExpense: _isExpense,
-        );
-        provider.updateCategory(updated);
-      }
-
-      Navigator.pop(context);
+    if (!_formKey.currentState!.validate()) return;
+    final p = Provider.of<CategoryProvider>(context, listen: false);
+    if (widget.category == null) {
+      p.addCategory(
+          name: _nameCtrl.text.trim(),
+          icon: _icon,
+          colorValue: _color.value,
+          isExpense: _isExpense);
+    } else {
+      p.updateCategory(widget.category!.copyWith(
+          name: _nameCtrl.text.trim(),
+          icon: _icon,
+          colorValue: _color.value,
+          isExpense: _isExpense));
     }
+    Navigator.pop(context);
   }
 
   void _delete() {
-    final provider = Provider.of<CategoryProvider>(context, listen: false);
-    provider.deleteCategory(widget.category!);
+    Provider.of<CategoryProvider>(context, listen: false)
+        .deleteCategory(widget.category!);
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isEdit = widget.category != null;
+
     return Dialog(
+      backgroundColor: isDark ? AppConstants.darkSurface : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppConstants.radiusXXL),
+      ),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 650),
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.paddingLarge),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      widget.category == null ? 'Nueva Categoría' : 'Editar Categoría',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 680),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(AppConstants.paddingLarge),
+              decoration: BoxDecoration(
+                color: _color.withOpacity(0.1),
+                borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppConstants.radiusXXL)),
+              ),
+              child: Row(
+                children: [
+                  Text(_icon, style: const TextStyle(fontSize: 28)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      isEdit ? 'Editar categoría' : 'Nueva categoría',
+                      style: GoogleFonts.inter(
+                          fontSize: 18, fontWeight: FontWeight.w700),
                     ),
-                    if (widget.category != null)
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: AppConstants.errorColor),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Confirmar eliminación'),
-                              content: const Text(
-                                '¿Estás seguro de eliminar esta categoría?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text('Cancelar'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    _delete();
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppConstants.errorColor,
-                                  ),
-                                  child: const Text('Eliminar'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                  ],
-                ),
-                const SizedBox(height: AppConstants.paddingLarge),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre',
-                    hintText: 'Ej: Alimentación',
                   ),
-                  validator: (value) =>
-                      value?.isEmpty ?? true ? 'Ingresa un nombre' : null,
-                ),
-                const SizedBox(height: AppConstants.paddingMedium),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Tipo de categoría'),
-                  subtitle: Text(_isExpense ? 'Gasto' : 'Ingreso'),
-                  value: _isExpense,
-                  onChanged: (value) => setState(() => _isExpense = value),
-                ),
-                const SizedBox(height: AppConstants.paddingMedium),
-                const Text(
-                  'Color',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: AppConstants.paddingSmall),
-                GestureDetector(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Selecciona un color'),
-                        content: SingleChildScrollView(
-                          child: BlockPicker(
-                            pickerColor: _selectedColor,
-                            onColorChanged: (color) {
-                              setState(() => _selectedColor = color);
-                              Navigator.pop(context);
-                            },
+                  if (isEdit)
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline,
+                          color: AppConstants.expenseColor),
+                      onPressed: () => _confirmDelete(context),
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+
+            Flexible(
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  padding:
+                      const EdgeInsets.all(AppConstants.paddingLarge),
+                  children: [
+                    // Nombre
+                    TextFormField(
+                      controller: _nameCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Nombre *',
+                        prefixIcon: Icon(Icons.label_outline_rounded),
+                      ),
+                      validator: (v) =>
+                          v?.trim().isEmpty ?? true ? 'Requerido' : null,
+                    ),
+                    const SizedBox(height: AppConstants.paddingMedium),
+
+                    // Tipo
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppConstants.darkCard
+                            : const Color(0xFFF8FAFC),
+                        borderRadius:
+                            BorderRadius.circular(AppConstants.radiusLarge),
+                        border: Border.all(
+                            color: isDark
+                                ? AppConstants.darkBorder
+                                : Colors.black.withOpacity(0.08)),
+                      ),
+                      child: SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text('Tipo',
+                            style: GoogleFonts.inter(
+                                fontSize: 14, fontWeight: FontWeight.w500)),
+                        subtitle: Text(
+                          _isExpense ? 'Gasto' : 'Ingreso',
+                          style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: _isExpense
+                                  ? AppConstants.expenseColor
+                                  : AppConstants.incomeColor),
+                        ),
+                        value: _isExpense,
+                        onChanged: (v) => setState(() => _isExpense = v),
+                        activeColor: AppConstants.expenseColor,
+                        inactiveThumbColor: AppConstants.incomeColor,
+                        inactiveTrackColor:
+                            AppConstants.incomeColor.withOpacity(0.4),
+                      ),
+                    ),
+                    const SizedBox(height: AppConstants.paddingMedium),
+
+                    // Color
+                    Text('Color',
+                        style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF64748B))),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: const Text('Selecciona un color'),
+                          content: SingleChildScrollView(
+                            child: BlockPicker(
+                              pickerColor: _color,
+                              onColorChanged: (c) {
+                                setState(() => _color = c);
+                                Navigator.pop(context);
+                              },
+                            ),
                           ),
                         ),
                       ),
-                    );
-                  },
-                  child: Container(
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: _selectedColor,
-                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Toca para cambiar',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppConstants.paddingMedium),
-                const Text(
-                  'Icono',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: AppConstants.paddingSmall),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: AppConstants.categoryIcons.map((icon) {
-                    final isSelected = _selectedIcon == icon;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedIcon = icon),
                       child: Container(
-                        width: 50,
-                        height: 50,
+                        height: 44,
                         decoration: BoxDecoration(
-                          color: isSelected
-                              ? _selectedColor
-                              : _selectedColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
-                          border: Border.all(
-                            color: _selectedColor,
-                            width: isSelected ? 2 : 1,
-                          ),
+                          color: _color,
+                          borderRadius:
+                              BorderRadius.circular(AppConstants.radiusLarge),
                         ),
                         child: Center(
                           child: Text(
-                            icon,
-                            style: const TextStyle(fontSize: 24),
+                            'Tocar para cambiar color',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: AppConstants.paddingLarge),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancelar'),
                     ),
-                    const SizedBox(width: AppConstants.paddingSmall),
-                    ElevatedButton(
-                      onPressed: _save,
-                      child: Text(widget.category == null ? 'Guardar' : 'Actualizar'),
+                    const SizedBox(height: AppConstants.paddingMedium),
+
+                    // Íconos
+                    Text('Ícono',
+                        style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF64748B))),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: AppConstants.categoryIcons.map((ico) {
+                        final sel = _icon == ico;
+                        return GestureDetector(
+                          onTap: () => setState(() => _icon = ico),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            width: 46,
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: sel
+                                  ? _color
+                                  : _color.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(
+                                  AppConstants.radiusMedium),
+                              border: Border.all(
+                                color: _color,
+                                width: sel ? 0 : 1,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(ico,
+                                  style:
+                                      const TextStyle(fontSize: 22)),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: AppConstants.paddingXL),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancelar'),
+                          ),
+                        ),
+                        const SizedBox(width: AppConstants.paddingMedium),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: _save,
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: _color),
+                            child: Text(
+                                isEdit ? 'Actualizar' : 'Guardar'),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Eliminar categoría'),
+        content:
+            Text('¿Eliminar "${widget.category!.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _delete();
+            },
+            style: TextButton.styleFrom(
+                foregroundColor: AppConstants.expenseColor),
+            child: const Text('Eliminar'),
+          ),
+        ],
       ),
     );
   }
